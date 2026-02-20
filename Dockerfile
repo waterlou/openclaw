@@ -57,8 +57,8 @@ RUN git clone --depth 1 https://github.com/openclaw/openclaw.git . && \
     pnpm ui:install && \
     pnpm ui:build
 
-# Install playwright-core and Chromium using pnpm (avoids npm bug)
-RUN pnpm add playwright-core && \
+# Install playwright-core and Chromium (use -w for workspace root)
+RUN pnpm add -w playwright-core && \
     pnpm exec playwright install-deps chromium && \
     pnpm exec playwright install chromium
 
