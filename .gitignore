@@ -1,0 +1,17 @@
+# SSH keys - DO NOT COMMIT
+.ssh/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
