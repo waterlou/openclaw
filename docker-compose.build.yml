@@ -1,9 +1,9 @@
 services:
   openclaw:
-    # Change this to build from the Dockerfile for ARM64 systems
+    # Change this to build from the Dockerfile.base for basic image
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.base
     # Comment out the image line when building locally
     # image: ghcr.io/waterlou/openclaw:latest
 

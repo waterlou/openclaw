@@ -1,26 +1,38 @@
 services:
   openclaw:
-    image: ghcr.io/waterlou/openclaw:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Or use pre-built image:
+    # image: ghcr.io/waterlou/openclaw:latest
+
     container_name: openclaw-nas
     restart: unless-stopped
 
-    # Port for OpenClaw gateway
+    # Ports:
+    # - 18789: OpenClaw gateway
+    # - 6901: noVNC web interface (remote browser)
     ports:
       - "18789:18789"
+      - "6901:6901"
+      # - "5900:5900"  # Uncomment for direct VNC access
+      # - "9222:9222"  # Uncomment for CDP access
 
     # Environment variables
     environment:
-      # AI Provider (choose one and set your API key)
-      # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      # OPENAI_API_KEY: ${OPENAI_API_KEY}
-      # GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # AI Provider (set your API key)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
 
       # Gateway configuration
       OPENCLAW_GATEWAY_BIND: lan
-      # OPENCLAW_GATEWAY_TOKEN: your-secret-token-here
 
-      # Browser configuration (Chromium is pre-installed)
+      # Browser configuration
       PLAYWRIGHT_BROWSERS_PATH: /home/node/.cache/ms-playwright
+
+      # Remote access configuration
+      VNC_PASSWORD: ${VNC_PASSWORD:-openclaw}
+      SCREEN_WIDTH: 1920
+      SCREEN_HEIGHT: 1080
 
     # Persist state and workspace
     volumes:
@@ -28,7 +40,7 @@ services:
       - openclaw-workspace:/home/node/workspace
       - openclaw-browser-cache:/home/node/.cache/ms-playwright
 
-    # Resource limits (adjust based on your NAS specs)
+    # Resource limits
     deploy:
       resources:
         limits:
@@ -40,11 +52,11 @@ services:
 
     # Health check
     healthcheck:
-      test: ["CMD", "node", "dist/index.js", "health"]
+      test: ["CMD", "curl", "-f", "http://localhost:18789/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
 volumes:
   openclaw-data:
@@ -53,30 +65,3 @@ volumes:
     name: openclaw-workspace
   openclaw-browser-cache:
     name: openclaw-browser-cache
-
-# Optional: Add a browser sidecar if you need a full desktop UI
-# services:
-#   browser:
-#     image: kasmweb/chrome:latest
-#     container_name: openclaw-browser
-#     restart: unless-stopped
-#     ports:
-#       - "6901:6901"  # noVNC web UI
-#       - "9222:9222"  # Chrome DevTools Protocol (CDP)
-#     shm_size: 512m
-#     environment:
-#       VNC_PW: change-this-password
-#     networks:
-#       - openclaw-network
-#
-#   openclaw:
-#     image: ghcr.io/waterlou/openclaw:latest
-#     ...
-#     environment:
-#       BROWSER_CDP_URL: http://browser:9222
-#     networks:
-#       - openclaw-network
-#
-# networks:
-#   openclaw-network:
-#     driver: bridge

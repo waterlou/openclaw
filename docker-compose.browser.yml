@@ -5,7 +5,7 @@ services:
   openclaw-browser:
     build:
       context: .
-      dockerfile: Dockerfile.browser
+      dockerfile: Dockerfile
     # Or use pre-built image:
     # image: ghcr.io/waterlou/openclaw:browser
 
