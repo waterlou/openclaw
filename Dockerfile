@@ -57,10 +57,10 @@ RUN git clone --depth 1 https://github.com/openclaw/openclaw.git . && \
     pnpm ui:install && \
     pnpm ui:build
 
-# Install playwright-core and Chromium with dependencies
-RUN npm install -g playwright-core && \
-    npx playwright install-deps chromium && \
-    npx playwright install chromium
+# Install playwright-core and Chromium using pnpm (avoids npm bug)
+RUN pnpm add playwright-core && \
+    pnpm exec playwright install-deps chromium && \
+    pnpm exec playwright install chromium
 
 # Install noVNC for web-based remote access
 RUN mkdir -p /opt/novnc && \
