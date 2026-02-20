@@ -2,14 +2,37 @@
 # Includes: noVNC (web), VNC (direct), and CDP (programmatic)
 # Supports: linux/amd64, linux/arm64
 
-# Use official OpenClaw image
-FROM ghcr.io/openclaw/openclaw:latest AS base
+# Use node:22-bookworm as base and install OpenClaw
+FROM node:22-bookworm AS base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    jq \
+    procps \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install bun (required by OpenClaw)
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
+
+# Enable corepack for pnpm
+RUN corepack enable
+
+WORKDIR /app
+
+# Clone and build OpenClaw
+RUN git clone --depth 1 https://github.com/openclaw/openclaw.git . && \
+    pnpm install --frozen-lockfile && \
+    pnpm build && \
+    pnpm ui:install && \
+    pnpm ui:build
 
 # Install Chromium, browser dependencies, and remote access tools
-USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Browser dependencies
-    ca-certificates \
     fonts-liberation \
     fonts-noto-cjk \
     libasound2 \
@@ -36,18 +59,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fluxbox \
     websockify \
     python3-numpy \
-    # Utilities
-    curl \
-    jq \
-    procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Install playwright-core (required for Chromium installation)
-WORKDIR /app
-RUN npm install playwright-core
-
-# Install Chromium browser via Playwright
-RUN npx playwright install chromium
+# Install playwright-core and Chromium
+RUN npm install playwright-core && npx playwright install chromium
 
 # Install noVNC for web-based remote access
 RUN mkdir -p /opt/novnc && \
@@ -59,6 +74,11 @@ RUN mkdir -p /opt/novnc && \
 COPY scripts/entrypoint-browser.sh /opt/entrypoint-browser.sh
 RUN chmod +x /opt/entrypoint-browser.sh
 
+# Create node user and set up directories
+RUN useradd -m -u 1000 node && \
+    mkdir -p /home/node/.cache/ms-playwright && \
+    chown -R node:node /home/node/.cache/ms-playwright /app
+
 # Environment variables
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright \
     DISPLAY=:99 \
@@ -68,11 +88,11 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright \
     VNC_PASSWORD=openclaw \
     SCREEN_WIDTH=1920 \
     SCREEN_HEIGHT=1080 \
-    SCREEN_DEPTH=24
+    SCREEN_DEPTH=24 \
+    NODE_ENV=production
 
-# Create browser cache directory
-RUN mkdir -p /home/node/.cache/ms-playwright && \
-    chown -R node:node /home/node/.cache/ms-playwright
+# Switch to node user
+USER node
 
 # Expose ports
 # 18789 - OpenClaw gateway
