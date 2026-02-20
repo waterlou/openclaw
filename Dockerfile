@@ -5,34 +5,14 @@
 # Use node:22-bookworm as base and install OpenClaw
 FROM node:22-bookworm AS base
 
-# Install system dependencies
+# Install system dependencies first
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     jq \
     procps \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install bun (required by OpenClaw)
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
-
-# Enable corepack for pnpm
-RUN corepack enable
-
-WORKDIR /app
-
-# Clone and build OpenClaw
-RUN git clone --depth 1 https://github.com/openclaw/openclaw.git . && \
-    pnpm install --frozen-lockfile && \
-    pnpm build && \
-    pnpm ui:install && \
-    pnpm ui:build
-
-# Install Chromium, browser dependencies, and remote access tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    # Browser dependencies
+    # Playwright/Chromium dependencies
     fonts-liberation \
     fonts-noto-cjk \
     libasound2 \
@@ -61,8 +41,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-numpy \
     && rm -rf /var/lib/apt/lists/*
 
-# Install playwright-core and Chromium
-RUN npm install playwright-core && npx playwright install chromium
+# Install bun (required by OpenClaw)
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
+
+# Enable corepack for pnpm
+RUN corepack enable
+
+WORKDIR /app
+
+# Clone and build OpenClaw
+RUN git clone --depth 1 https://github.com/openclaw/openclaw.git . && \
+    pnpm install --frozen-lockfile && \
+    pnpm build && \
+    pnpm ui:install && \
+    pnpm ui:build
+
+# Install playwright-core and Chromium with dependencies
+RUN npm install -g playwright-core && \
+    npx playwright install-deps chromium && \
+    npx playwright install chromium
 
 # Install noVNC for web-based remote access
 RUN mkdir -p /opt/novnc && \
