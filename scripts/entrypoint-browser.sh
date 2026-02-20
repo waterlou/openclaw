@@ -52,17 +52,20 @@ x11vnc -display ${DISPLAY} \
     -forever \
     -shared \
     -rfbport ${VNC_PORT} \
+    -rfbportv6 ${VNC_PORT} \
     -passwd ${VNC_PASSWORD} \
     -bg \
     -o /tmp/x11vnc.log \
     -noxdamage \
-    -cursor_arrow &
+    -cursor_arrow \
+    -listen localhost
 sleep 1
 
 # Start noVNC for web-based access
+# Listen on 0.0.0.0 to accept connections from any IP
 echo "[4/5] Starting noVNC websockify on port ${NOVNC_PORT}..."
 cd /opt/novnc
-websockify --web=/opt/novnc ${NOVNC_PORT} localhost:${VNC_PORT} &
+websockify --web=/opt/novnc 0.0.0.0:${NOVNC_PORT} localhost:${VNC_PORT} &
 NOVNC_PID=$!
 sleep 1
 
@@ -96,11 +99,11 @@ echo "  All services started successfully!"
 echo "=============================================="
 echo ""
 echo "  Access the browser:"
-echo "    Web:     http://localhost:${NOVNC_PORT}/vnc.html"
-echo "    VNC:     vnc://localhost:${VNC_PORT} (password: ${VNC_PASSWORD})"
-echo "    CDP:     http://localhost:${CDP_PORT}"
+echo "    Web:     http://<your-ip>:${NOVNC_PORT}/vnc.html"
+echo "    VNC:     vnc://<your-ip>:${VNC_PORT} (password: ${VNC_PASSWORD})"
+echo "    CDP:     http://<your-ip>:${CDP_PORT}"
 echo ""
-echo "  OpenClaw Gateway: http://localhost:18789"
+echo "  OpenClaw Gateway: http://<your-ip>:18789"
 echo "=============================================="
 echo ""
 
