@@ -72,9 +72,8 @@ RUN mkdir -p /opt/novnc && \
 COPY scripts/entrypoint-browser.sh /opt/entrypoint-browser.sh
 RUN chmod +x /opt/entrypoint-browser.sh
 
-# Create node user and set up directories
-RUN useradd -m -u 1000 node && \
-    mkdir -p /home/node/.cache/ms-playwright && \
+# Set up directories (node user already exists in node:22-bookworm)
+RUN mkdir -p /home/node/.cache/ms-playwright && \
     chown -R node:node /home/node/.cache/ms-playwright /app
 
 # Environment variables
