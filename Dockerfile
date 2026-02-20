@@ -1,7 +1,9 @@
 # OpenClaw + Chromium with Remote Access Support
 # Includes: noVNC (web), VNC (direct), and CDP (programmatic)
+# Supports: linux/amd64, linux/arm64
 
-FROM ghcr.io/openclaw/openclaw:latest AS base
+# Use coollabsio/openclaw which has multi-arch support
+FROM coollabsio/openclaw:latest AS base
 
 # Install Chromium, browser dependencies, and remote access tools
 USER root

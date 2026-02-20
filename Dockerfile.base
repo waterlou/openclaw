@@ -1,11 +1,10 @@
-# Multi-stage build for OpenClaw with Chromium browser support
-# Base: Latest OpenClaw official image
-# Adds: Chromium browser for OpenClaw's browser tool
+# OpenClaw + Chromium - Basic Image
+# Lightweight version without remote desktop (VNC/noVNC)
+# Supports: linux/amd64, linux/arm64
 
-FROM ghcr.io/openclaw/openclaw:latest AS base
+FROM coollabsio/openclaw:latest AS base
 
 # Install Chromium and browser dependencies
-# These are required for Chromium to run in a headless/container environment
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -30,21 +29,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright Chromium browser for OpenClaw's browser tool
-# Use the playwright-core CLI to install only Chromium (smaller footprint)
+# Install Playwright Chromium
 RUN node /app/node_modules/playwright-core/cli.js install chromium
 
-# Set Playwright browsers path to persistent cache location
+# Set Playwright browsers path
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
 
-# Ensure cache directory exists and is owned by node user
+# Create browser cache directory
 RUN mkdir -p /home/node/.cache/ms-playwright && \
     chown -R node:node /home/node/.cache/ms-playwright
 
-# Switch back to node user for security
+# Switch back to node user
 USER node
 
-# Expose standard OpenClaw gateway port
+# Expose OpenClaw gateway port
 EXPOSE 18789
 
 # Health check
