@@ -10,6 +10,40 @@ A Docker image for OpenClaw with pre-installed Chromium browser support, optimiz
 - ✅ **Multi-architecture**: Supports both AMD64 and ARM64 (perfect for Raspberry Pi NAS)
 - ✅ **Persistent Storage**: Preserves configuration, workspace, and browser cache across restarts
 
+## Remote Browser Access (noVNC/VNC/CDP)
+
+This image includes a browser variant with remote access support. You can access Chromium remotely via:
+
+### Access Methods
+
+| Method | Port | URL | Description |
+|--------|------|-----|-------------|
+| **noVNC** | 6901 | `http://your-nas:6901/vnc.html` | Web-based access (easiest) |
+| **VNC** | 5900 | `vnc://your-nas:5900` | VNC client access |
+| **CDP** | 9222 | `http://your-nas:9222` | Chrome DevTools Protocol |
+
+### Quick Start with Remote Browser
+
+```bash
+# Build and start with remote browser access
+docker compose -f docker-compose.browser.yml up -d
+
+# Access the browser
+# Web: http://localhost:6901/vnc.html
+# VNC Password: openclaw (default)
+```
+
+### Remote Access Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VNC_PASSWORD` | `openclaw` | VNC/noVNC password |
+| `SCREEN_WIDTH` | `1920` | Virtual display width |
+| `SCREEN_HEIGHT` | `1080` | Virtual display height |
+| `NOVNC_PORT` | `6901` | noVNC web interface port |
+| `VNC_PORT` | `5900` | VNC direct access port |
+| `CDP_PORT` | `9222` | Chrome DevTools Protocol port |
+
 ## Quick Start
 
 ### Using Docker Run
