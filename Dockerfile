@@ -42,16 +42,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright and Chromium
-# Check if playwright-core exists, otherwise install it
-RUN if [ -d /app/node_modules/playwright-core ]; then \
-        echo "Using existing playwright-core"; \
-    else \
-        echo "Installing playwright-core"; \
-        cd /app && npm install playwright-core --save; \
-    fi && \
-    node /app/node_modules/playwright-core/cli.js install chromium && \
-    node /app/node_modules/playwright-core/cli.js install-deps chromium || true
+# Install playwright-core (required for Chromium installation)
+WORKDIR /app
+RUN npm install playwright-core
+
+# Install Chromium browser via Playwright
+RUN npx playwright install chromium
 
 # Install noVNC for web-based remote access
 RUN mkdir -p /opt/novnc && \
