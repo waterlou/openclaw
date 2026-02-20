@@ -51,6 +51,48 @@ docker compose logs -f
 docker compose down
 ```
 
+### ARM64 / Raspberry Pi NAS
+
+**Option 1: Build locally (faster for first-time setup)**
+
+If you're on an ARM64 system (Raspberry Pi, Synology, etc.) and the pre-built image isn't available yet:
+
+```bash
+# Clone this repo
+git clone https://github.com/waterlou/openclaw.git
+cd openclaw
+
+# Create .env file
+cat > .env << EOF
+ANTHROPIC_API_KEY=your-key-here
+EOF
+
+# Build locally for ARM64
+docker build -t waterlou/openclaw:arm64-latest .
+
+# Start with local build
+sed -i 's|image: ghcr.io/waterlou/openclaw:latest|image: waterlou/openclaw:arm64-latest|' docker-compose.yml
+
+# Start the container
+docker compose up -d
+```
+
+**Option 2: Wait for GitHub Actions (pull pre-built image)**
+
+The GitHub Actions workflow builds ARM64 images automatically. After the workflow completes (~10-15 minutes):
+
+```bash
+# Pull the ARM64 image
+docker compose pull
+
+# Start the container
+docker compose up -d
+```
+
+To check the workflow status:
+- Go to: https://github.com/waterlou/openclaw/actions
+- Wait for the "Auto-build on OpenClaw Release" workflow to complete ✅
+
 ## Environment Variables
 
 ### AI Providers (at least one required)

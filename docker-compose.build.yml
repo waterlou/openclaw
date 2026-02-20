@@ -1,0 +1,58 @@
+services:
+  openclaw:
+    # Change this to build from the Dockerfile for ARM64 systems
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Comment out the image line when building locally
+    # image: ghcr.io/waterlou/openclaw:latest
+
+    container_name: openclaw-nas
+    restart: unless-stopped
+
+    # Port for OpenClaw gateway
+    ports:
+      - "18789:18789"
+
+    # Environment variables
+    environment:
+      # AI Provider (choose one and set your API key)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # Gateway configuration
+      OPENCLAW_GATEWAY_BIND: lan
+
+      # Browser configuration (Chromium is pre-installed)
+      PLAYWRIGHT_BROWSERS_PATH: /home/node/.cache/ms-playwright
+
+    # Persist state and workspace
+    volumes:
+      - openclaw-data:/home/node/.openclaw
+      - openclaw-workspace:/home/node/workspace
+      - openclaw-browser-cache:/home/node/.cache/ms-playwright
+
+    # Resource limits suitable for NAS (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "dist/index.js", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  openclaw-data:
+    name: openclaw-data
+  openclaw-workspace:
+    name: openclaw-workspace
+  openclaw-browser-cache:
+    name: openclaw-browser-cache
