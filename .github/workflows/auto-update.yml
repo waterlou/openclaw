@@ -1,87 +1,30 @@
-name: Auto-build on OpenClaw Release
+name: Build Multi-Arch Docker Image
 
 on:
-  schedule:
-    # Check every 6 hours for new OpenClaw releases
-    - cron: '0 */6 * * *'
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       force_rebuild:
-        description: 'Force rebuild even if version exists'
+        description: 'Force rebuild'
         required: false
-        default: 'false'
+        default: 'true'
         type: choice
         options:
           - 'true'
-          - 'false'
-      skip_latest:
-        description: 'Skip tagging as latest'
-        required: false
-        default: 'false'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  check-release:
-    name: Check for new OpenClaw release
-    runs-on: ubuntu-latest
-    outputs:
-      latest_version: ${{ steps.get-latest.outputs.version }}
-      should_build: ${{ steps.check.outputs.should_build }}
-    steps:
-      - name: Get latest OpenClaw release
-        id: get-latest
-        run: |
-          LATEST=$(curl -s "https://api.github.com/repos/openclaw/openclaw/releases/latest" | jq -r '.tag_name' | sed 's/^v//')
-          echo "version=$LATEST" >> $GITHUB_OUTPUT
-          echo "Latest OpenClaw version: $LATEST"
-
-      - name: Check if image already exists
-        id: check
-        run: |
-          VERSION="${{ steps.get-latest.outputs.version }}"
-          FORCE="${{ github.event.inputs.force_rebuild || 'false' }}"
-
-          if [ "$FORCE" = "true" ]; then
-            echo "Force rebuild requested"
-            echo "should_build=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Check if image tag exists
-          GH_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
-            gh api \
-              --method GET \
-              "/repos/${{ github.repository }}/packages/container/openclaw/versions" \
-              --jq ".[].metadata.container.tags[]" 2>/dev/null | grep -q "^${VERSION}$" || BUILD_NEEDED=true
-
-          if [ "$BUILD_NEEDED" = "true" ]; then
-            echo "Version ${VERSION} not found, building..."
-            echo "should_build=true" >> $GITHUB_OUTPUT
-          else
-            echo "Version ${VERSION} already exists, skipping build"
-            echo "should_build=false" >> $GITHUB_OUTPUT
-          fi
-
   build:
-    name: Build Docker image
-    needs: check-release
-    if: needs.check-release.outputs.should_build == 'true'
+    name: Build and push multi-arch image
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -105,35 +48,24 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ needs.check-release.outputs.latest_version }}
-            type=raw,value=latest,enable=${{ github.event.inputs.skip_latest != 'true' }}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+            type=sha,prefix=
 
-      - name: Build and push
+      - name: Build and push (multi-arch in single run)
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            OPENCLAW_VERSION=${{ needs.check-release.outputs.latest_version }}
 
-  notify:
-    name: Notify on build completion
-    needs: [check-release, build]
-    if: always() && needs.build.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
       - name: Build summary
         run: |
           echo "## Build Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "OpenClaw version: ${{ needs.check-release.outputs.latest_version }}" >> $GITHUB_STEP_SUMMARY
-          echo "Image tags pushed:" >> $GITHUB_STEP_SUMMARY
-          echo "  - \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.check-release.outputs.latest_version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "  - Latest: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "Multi-arch image pushed:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Platforms: linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
