@@ -27,8 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright and Chromium browser
-RUN pnpm add playwright-core && \
+# Install Playwright and Chromium browser (use -w for workspace root)
+RUN pnpm add -w playwright-core && \
     pnpm exec playwright-core install chromium
 
 # Set Playwright browsers path
