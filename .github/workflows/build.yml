@@ -1,0 +1,118 @@
+name: Build Docker Image
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+  
+  # Schedule: Check daily at 6:00 UTC for base image updates
+  schedule:
+    - cron: '0 6 * * *'
+  
+  # Trigger on push to main
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  BASE_IMAGE: ghcr.io/openclaw/openclaw:latest
+
+jobs:
+  check-base:
+    name: Check for base image update
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+      base_digest: ${{ steps.check.outputs.base_digest }}
+    
+    steps:
+      - name: Check base image digest
+        id: check
+        run: |
+          # Get current base image digest
+          BASE_DIGEST=$(docker manifest inspect ${{ env.BASE_IMAGE }} --verbose 2>/dev/null | jq -r '.[0].Manifest.digest' 2>/dev/null || echo "unknown")
+          
+          # If we can't get digest, build anyway
+          if [ "$BASE_DIGEST" = "unknown" ]; then
+            echo "Cannot determine base image digest, will build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "base_digest=$BASE_DIGEST" >> $GITHUB_OUTPUT
+          echo "Base image digest: $BASE_DIGEST"
+          
+          # Check if this digest was already built
+          # For manual trigger or push, always build
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # For scheduled runs, check if digest changed
+          # Try to get the last built digest from the image labels
+          LAST_DIGEST=$(gh api /users/${{ github.repository_owner }}/packages/container/openclaw/versions 2>/dev/null | jq -r '.[0].metadata.container.labels."base-digest"' 2>/dev/null || echo "")
+          
+          if [ "$LAST_DIGEST" != "$BASE_DIGEST" ]; then
+            echo "Base image updated! Last: $LAST_DIGEST, Current: $BASE_DIGEST"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "Base image not updated, skipping build"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    name: Build and push
+    needs: check-base
+    if: needs.check-base.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BASE_DIGEST=${{ needs.check-base.outputs.base_digest }}
+
+      - name: Build summary
+        run: |
+          echo "## Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+          echo "- **Base image digest:** \`${{ needs.check-base.outputs.base_digest }}\`" >> $GITHUB_STEP_SUMMARY
