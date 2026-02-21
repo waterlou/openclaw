@@ -63,58 +63,31 @@ services:
       retries: 3
       start_period: 15s
 
-    # Link to browserless service
-    depends_on:
-      - browserless
+    # Link to browserless service (optional)
+    # depends_on:
+    #   - browserless
 
   # Browserless Chrome - Headless browser service for OpenClaw
-  browserless:
-    image: browserless/chrome:latest
-    container_name: browserless
-    restart: unless-stopped
-
-    ports:
-      - "3000:3000"   # Web interface and API
-
-    environment:
-      # Connection token (optional, for security)
-      TOKEN: ${BROWSERLESS_TOKEN:-}
-
-      # Maximum concurrent sessions
-      MAX_CONCURRENT_SESSIONS: 10
-
-      # Connection timeout (ms)
-      CONNECTION_TIMEOUT: 600000
-
-      # Maximum queue length
-      MAX_QUEUE_LENGTH: 20
-
-      # Preboot chrome for faster connections
-      PREBOOT_CHROME: "true"
-
-      # Enable debugging
-      ENABLE_DEBUGGER: "true"
-
-      # Keep alive
-      KEEP_ALIVE: "true"
-
-    # Resource limits
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
-
-    # Health check
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+  # Use ghcr.io/browserless/chromium for better ARM64 support
+  # Uncomment this section if you want to use browserless
+  # browserless:
+  #   image: ghcr.io/browserless/chromium:latest
+  #   container_name: browserless
+  #   restart: unless-stopped
+  # 
+  #   ports:
+  #     - "3000:3000"
+  # 
+  #   environment:
+  #     TOKEN: ${BROWSERLESS_TOKEN:-}
+  #     MAX_CONCURRENT_SESSIONS: 10
+  #     CONNECTION_TIMEOUT: 600000
+  # 
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '2'
+  #         memory: 2G
 
 volumes:
   openclaw-data:
