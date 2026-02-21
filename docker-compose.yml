@@ -11,11 +11,13 @@ services:
 
     # Ports:
     # - 18789: OpenClaw gateway
+    # - 5900: VNC direct access
     # - 6901: noVNC web interface (remote browser)
+    # - 9222: Chrome DevTools Protocol (CDP)
     ports:
       - "18789:18789"
+      - "5900:5900"
       - "6901:6901"
-      # - "5900:5900"  # Uncomment for direct VNC access
       # - "9222:9222"  # Uncomment for CDP access
 
     # Environment variables

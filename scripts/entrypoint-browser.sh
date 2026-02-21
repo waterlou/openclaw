@@ -46,28 +46,28 @@ fluxbox -display ${DISPLAY} -log /tmp/fluxbox.log &
 FLUXBOX_PID=$!
 sleep 1
 
-# Start x11vnc for VNC access
+# Start x11vnc for VNC access (listen on all interfaces)
 echo "[3/5] Starting x11vnc on port ${VNC_PORT}..."
 x11vnc -display ${DISPLAY} \
     -forever \
     -shared \
     -rfbport ${VNC_PORT} \
-    -rfbportv6 ${VNC_PORT} \
     -passwd ${VNC_PASSWORD} \
     -bg \
     -o /tmp/x11vnc.log \
     -noxdamage \
     -cursor_arrow \
-    -listen localhost
-sleep 1
+    -nopw \
+    -listen 0.0.0.0
+sleep 2
 
 # Start noVNC for web-based access
 # Listen on 0.0.0.0 to accept connections from any IP
 echo "[4/5] Starting noVNC websockify on port ${NOVNC_PORT}..."
 cd /opt/novnc
-websockify --web=/opt/novnc 0.0.0.0:${NOVNC_PORT} localhost:${VNC_PORT} &
+websockify --web=/opt/novnc 0.0.0.0:${NOVNC_PORT} 127.0.0.1:${VNC_PORT} &
 NOVNC_PID=$!
-sleep 1
+sleep 2
 
 # Start Chromium with CDP enabled (headful mode for VNC visibility)
 echo "[5/5] Starting Chromium with CDP on port ${CDP_PORT}..."
@@ -107,6 +107,10 @@ echo "  OpenClaw Gateway: http://<your-ip>:18789"
 echo "=============================================="
 echo ""
 
-# Start OpenClaw gateway
+# Keep script running and show logs
+echo "Services running. Press Ctrl+C to stop."
+echo ""
+
+# Start OpenClaw gateway in foreground
 cd /app
 exec node dist/index.js gateway
