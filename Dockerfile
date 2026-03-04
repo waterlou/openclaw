@@ -49,6 +49,9 @@ RUN mkdir -p /home/node/.cache/ms-playwright && \
 #RUN mkdir -p /home/node/.cache/ms-playwright && \
 #    chown -R node:node /home/node/.cache/ms-playwright
 
+# Install himalaya CLI email tool
+RUN curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=~/.local sh
+
 # Switch back to node user
 USER node
 
