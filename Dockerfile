@@ -3,6 +3,9 @@
 
 FROM ghcr.io/openclaw/openclaw:latest
 
+# Enables CI mode: skips TTY prompts
+ENV CI=true  
+
 # Install Playwright system dependencies and Chromium
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,17 +30,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright and Chromium browser (use -w for workspace root)
-RUN pnpm config set store-dir /app/.pnpm-store && \
-pnpm add -w playwright-core && \
-    pnpm exec playwright-core install chromium
+WORKDIR /app
+
+# Global store at /app/.pnpm-store + relink deps before Playwright
+RUN mkdir -p .pnpm-store && \
+    pnpm config set store-dir /app/.pnpm-store --global && \
+    pnpm install --frozen-lockfile --ignore-scripts && \
+    pnpm add -w vite --ignore-scripts && \
+    pnpm add -w playwright-core --ignore-scripts && \
+    pnpm exec playwright-core install --with-deps chromium
 
 # Set Playwright browsers path
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
 
 # Create browser cache directory
 RUN mkdir -p /home/node/.cache/ms-playwright && \
-    chown -R node:node /home/node/.cache/ms-playwright
+    chown -R node:node /home/node/.cache /app/.pnpm-store /app/node_modules
+#RUN mkdir -p /home/node/.cache/ms-playwright && \
+#    chown -R node:node /home/node/.cache/ms-playwright
 
 # Switch back to node user
 USER node
