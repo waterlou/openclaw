@@ -9,7 +9,7 @@ RUN git config --global http.sslVerify false && \
     git clone https://github.com/bitwarden/clients.git /build/clients
 WORKDIR /build/clients/apps/cli
 RUN rm -rf .husky && \
-    npm install && \
+    npm install --ignore-scripts && \
     npm run build:oss:prod && \
     npm install -g pkg && \
     mkdir -p /output/bin && \
