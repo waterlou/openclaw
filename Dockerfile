@@ -17,8 +17,7 @@ FROM ghcr.io/openclaw/openclaw:latest
 USER root
 
 COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
-RUN chmod +x /usr/local/bin/gog && \
-    gog --version
+RUN chmod +x /usr/local/bin/gog && gog --version
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Playwright/Chromium dependencies
@@ -44,23 +43,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Set Playwright browsers path
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
-ENV CI=true
 
 WORKDIR /app
 
-# Global store at /app/.pnpm-store + relink deps before Playwright
-RUN mkdir -p .pnpm-store && \
-    pnpm config set store-dir /app/.pnpm-store --global && \
-    pnpm install --frozen-lockfile --ignore-scripts && \
-    pnpm add -w vite --ignore-scripts && \
-    pnpm add -w playwright-core --ignore-scripts && \
-    pnpm exec playwright-core install --with-deps chromium
+USER node
 
-# Create browser cache directory
+# Download Chromium for Playwright using existing dependencies from base image
 RUN mkdir -p /home/node/.cache/ms-playwright && \
-    chown -R node:node /home/node/.cache /app/.pnpm-store /app/node_modules
-#RUN mkdir -p /home/node/.cache/ms-playwright && \
-#    chown -R node:node /home/node/.cache/ms-playwright
+    pnpm exec playwright-core install chromium
+
+USER root
 
 # Install himalaya CLI email tool
 RUN curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=/usr/local sh
