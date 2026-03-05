@@ -1,22 +1,6 @@
 # OpenClaw with Playwright Chromium
 # Supports: linux/amd64, linux/arm64
 
-# Bitwarden CLI builder
-FROM node:22-slim AS bw-builder
-RUN apt-get update && apt-get install -y --no-install-recommends git python3 make g++ && rm -rf /var/lib/apt/lists/*
-ENV PYTHON=/usr/bin/python3
-RUN git config --global http.sslVerify false && \
-    git clone https://github.com/bitwarden/clients.git /build/clients
-WORKDIR /build/clients/apps/cli
-RUN rm -rf .husky && \
-    npm install --ignore-scripts && \
-    npm install -D webpack webpack-cli cross-env copy-webpack-plugin tsconfig-paths-webpack-plugin webpack-node-externals ts-loader && \
-    npm run build:oss:prod && \
-    npm install -g pkg && \
-    mkdir -p /output/bin && \
-    pkg ./build/bw.js --targets linux-x64,linux-arm64 --output /output/bin/bw && \
-    chmod +x /output/bin/bw
-
 # gogcli builder - Google Suite CLI
 FROM golang:1.26-bookworm AS gog-builder
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
@@ -32,8 +16,12 @@ FROM ghcr.io/openclaw/openclaw:latest
 # Install Playwright system dependencies and Chromium
 USER root
 
-COPY --from=bw-builder /output/bin/bw /usr/local/bin/bw
-RUN chmod +x /usr/local/bin/bw && \
+# Install Bitwarden CLI from pre-built binary
+RUN curl -fsSL https://github.com/bitwarden/cli/releases/download/v1.22.1/bw-linux-1.22.1.zip -o /tmp/bw.zip && \
+    unzip /tmp/bw.zip -d /tmp/bw && \
+    mv /tmp/bw/bw /usr/local/bin/bw && \
+    chmod +x /usr/local/bin/bw && \
+    rm -rf /tmp/bw /tmp/bw.zip && \
     bw --version
 
 COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
