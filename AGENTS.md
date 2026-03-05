@@ -5,9 +5,9 @@ This file documents the tools and configurations added to the OpenClaw Docker im
 ## Extra CLI Tools
 
 ### Bitwarden CLI (bw)
-- **Repository:** https://github.com/bitwarden/cli
+- **Repository:** https://github.com/bitwarden/clients (CLI is in apps/cli directory)
 - **Description:** Official Bitwarden CLI for secure password management
-- **Installation:** Built from source using Node.js 20 LTS
+- **Installation:** Built from source using Node.js 20 LTS and pkg
 - **Support:** linux/amd64, linux/arm64
 
 ### Unofficial Bitwarden CLI (rbw)

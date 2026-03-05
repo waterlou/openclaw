@@ -3,15 +3,14 @@
 
 # Bitwarden CLI builder
 FROM node:20-slim AS bw-builder
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends git pkg && rm -rf /var/lib/apt/lists/*
 RUN git config --global http.sslVerify false && \
-    git clone https://github.com/bitwarden/cli.git /build/bw
-WORKDIR /build/bw
+    git clone https://github.com/bitwarden/clients.git /build/clients
+WORKDIR /build/clients/apps/cli
 RUN npm install && \
-    npm run sub:init && \
-    npm run build && \
+    npm run build:oss:prod && \
     mkdir -p /output/bin && \
-    cp ./build/node/bw.js /output/bin/bw && \
+    cp ./dist/oss/linux/bw /output/bin/bw && \
     chmod +x /output/bin/bw
 
 # gogcli builder - Google Suite CLI
