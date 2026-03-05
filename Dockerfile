@@ -2,8 +2,9 @@
 # Supports: linux/amd64, linux/arm64
 
 # Bitwarden CLI builder
-FROM node:20-slim AS bw-builder
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+FROM node:22-slim AS bw-builder
+RUN apt-get update && apt-get install -y --no-install-recommends git python3 && rm -rf /var/lib/apt/lists/*
+ENV PYTHON=/usr/bin/python3
 RUN git config --global http.sslVerify false && \
     git clone https://github.com/bitwarden/clients.git /build/clients
 WORKDIR /build/clients/apps/cli
