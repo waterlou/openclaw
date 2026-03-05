@@ -10,6 +10,7 @@ RUN git config --global http.sslVerify false && \
 WORKDIR /build/clients/apps/cli
 RUN rm -rf .husky && \
     npm install --ignore-scripts && \
+    npm install -g cross-env && \
     npm run build:oss:prod && \
     npm install -g pkg && \
     mkdir -p /output/bin && \
