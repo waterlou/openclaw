@@ -10,7 +10,7 @@ RUN git config --global http.sslVerify false && \
 WORKDIR /build/clients/apps/cli
 RUN rm -rf .husky && \
     npm install --ignore-scripts && \
-    npm install -D webpack webpack-cli cross-env copy-webpack-plugin tsconfig-paths-webpack-plugin webpack-node-externals && \
+    npm install -D webpack webpack-cli cross-env copy-webpack-plugin tsconfig-paths-webpack-plugin webpack-node-externals ts-loader && \
     npm run build:oss:prod && \
     npm install -g pkg && \
     mkdir -p /output/bin && \
