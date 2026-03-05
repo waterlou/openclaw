@@ -10,6 +10,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 
 ## Extra Tools
 
+- **[bw](https://github.com/bitwarden/cli)** - Official Bitwarden CLI for secure password management
 - **[rbw](https://github.com/doy/rbw)** - Unofficial Bitwarden CLI for secure password management
 - **[himalaya](https://github.com/pimalaya/himalaya)** - CLI email client for managing emails
 - **[gh](https://cli.github.com/)** - GitHub CLI for interacting with GitHub from the command line

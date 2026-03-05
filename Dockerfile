@@ -1,14 +1,16 @@
 # OpenClaw with Playwright Chromium
 # Supports: linux/amd64, linux/arm64
 
-# rbw builder - Bitwarden CLI
-FROM rust:1.81-slim-bookworm AS rbw-builder
-WORKDIR /build
-# PIN STABLE VERSION - no edition2024
-RUN cargo install rbw --version 1.13.2 --locked && \
+# Bitwarden CLI builder
+FROM node:20-slim AS bw-builder
+RUN git clone https://github.com/bitwarden/cli.git /build/bw
+WORKDIR /build/bw
+RUN npm install && \
+    npm run sub:init && \
+    npm run build && \
     mkdir -p /output/bin && \
-    cp $(which rbw) /output/bin/rbw && \
-    strip /output/bin/rbw
+    cp ./build/node/bw.js /output/bin/bw && \
+    chmod +x /output/bin/bw
 
 # gogcli builder - Google Suite CLI
 FROM golang:1.26-bookworm AS gog-builder
@@ -22,18 +24,12 @@ RUN git clone https://github.com/steipete/gogcli.git /build/gogcli && \
 
 FROM ghcr.io/openclaw/openclaw:latest
 
-# Enables CI mode: skips TTY prompts
-ENV CI=true  
-
 # Install Playwright system dependencies and Chromium
 USER root
 
-COPY --from=rbw-builder /output/bin/rbw /usr/local/bin/rbw
-RUN chmod +x /usr/local/bin/rbw && \
-    apt-get update --allow-releaseinfo-change -y && \
-    apt-get install -y --no-install-recommends pinentry-tty && \
-    rm -rf /var/lib/apt/lists/* && \
-    rbw --version
+COPY --from=bw-builder /output/bin/bw /usr/local/bin/bw
+RUN chmod +x /usr/local/bin/bw && \
+    bw --version
 
 COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
 RUN chmod +x /usr/local/bin/gog && \
