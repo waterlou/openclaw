@@ -4,7 +4,8 @@
 # Bitwarden CLI builder
 FROM node:20-slim AS bw-builder
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
-RUN git clone https://github.com/bitwarden/cli.git /build/bw
+RUN git config --global http.sslVerify false && \
+    git clone https://github.com/bitwarden/cli.git /build/bw
 WORKDIR /build/bw
 RUN npm install && \
     npm run sub:init && \
