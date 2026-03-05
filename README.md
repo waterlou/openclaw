@@ -1,12 +1,18 @@
 # OpenClaw Docker Image
 
-A Docker image for OpenClaw with pre-installed Playwright Chromium browser.
+A Docker image for OpenClaw with pre-installed Playwright Chromium browser and additional CLI tools.
 
 ## Features
 
 - OpenClaw gateway
 - Playwright Chromium browser
 - Multi-architecture support (linux/amd64, linux/arm64)
+
+## Extra Tools
+
+- **[rbw](https://github.com/doy/rbw)** - Unofficial Bitwarden CLI for secure password management
+- **[himalaya](https://github.com/pimalaya/himalaya)** - CLI email client for managing emails
+- **[gh](https://cli.github.com/)** - GitHub CLI for interacting with GitHub from the command line
 
 ## Quick Start
 
