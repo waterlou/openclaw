@@ -16,14 +16,6 @@ FROM ghcr.io/openclaw/openclaw:latest
 # Install Playwright system dependencies and Chromium
 USER root
 
-# Install Bitwarden CLI from pre-built binary
-RUN curl -fsSL https://github.com/bitwarden/cli/releases/download/v1.22.1/bw-linux-1.22.1.zip -o /tmp/bw.zip && \
-    unzip /tmp/bw.zip -d /tmp/bw && \
-    mv /tmp/bw/bw /usr/local/bin/bw && \
-    chmod +x /usr/local/bin/bw && \
-    rm -rf /tmp/bw /tmp/bw.zip && \
-    bw --version
-
 COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
 RUN chmod +x /usr/local/bin/gog && \
     gog --version
@@ -52,6 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Set Playwright browsers path
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
+ENV CI=true
 
 WORKDIR /app
 
@@ -82,6 +75,13 @@ RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
 	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
 	&& apt update \
 	&& apt install gh -y
+
+# Install Bitwarden CLI (bw) to /usr/local/bin for amd64 + arm64
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm view @bitwarden/cli version && \
+    npm install --global @bitwarden/cli --registry=https://registry.npmjs.org/ && \
+    command -v bw && \
+    bw --version
 
 # Switch back to node user
 USER node
