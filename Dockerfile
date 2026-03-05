@@ -3,7 +3,7 @@
 
 # Bitwarden CLI builder
 FROM node:22-slim AS bw-builder
-RUN apt-get update && apt-get install -y --no-install-recommends git python3 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends git python3 make g++ && rm -rf /var/lib/apt/lists/*
 ENV PYTHON=/usr/bin/python3
 RUN git config --global http.sslVerify false && \
     git clone https://github.com/bitwarden/clients.git /build/clients
