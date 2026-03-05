@@ -10,6 +10,16 @@ RUN cargo install rbw --version 1.13.2 --locked && \
     cp $(which rbw) /output/bin/rbw && \
     strip /output/bin/rbw
 
+# gogcli builder - Google Suite CLI
+FROM golang:1.22-slim-bookworm AS gog-builder
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+RUN git clone https://github.com/steipete/gogcli.git /build/gogcli && \
+    cd /build/gogcli && \
+    make && \
+    mkdir -p /output/bin && \
+    cp /build/gogcli/bin/gog /output/bin/gog && \
+    strip /output/bin/gog
+
 FROM ghcr.io/openclaw/openclaw:latest
 
 # Enables CI mode: skips TTY prompts
@@ -24,6 +34,10 @@ RUN chmod +x /usr/local/bin/rbw && \
     apt-get install -y --no-install-recommends pinentry-tty && \
     rm -rf /var/lib/apt/lists/* && \
     rbw --version
+
+COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
+RUN chmod +x /usr/local/bin/gog && \
+    gog --version
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Playwright/Chromium dependencies
