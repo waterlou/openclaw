@@ -10,8 +10,9 @@ RUN git config --global http.sslVerify false && \
 WORKDIR /build/clients/apps/cli
 RUN rm -rf .husky && \
     npm install --ignore-scripts && \
-    npm install -g cross-env webpack pkg webpack-cli && \
-    echo y | cross-env NODE_ENV=production webpack && \
+    npm install -D webpack webpack-cli cross-env && \
+    npm run build:oss:prod && \
+    npm install -g pkg && \
     mkdir -p /output/bin && \
     pkg ./build/bw.js --targets linux-x64,linux-arm64 --output /output/bin/bw && \
     chmod +x /output/bin/bw
