@@ -1,7 +1,7 @@
 # OpenClaw with Playwright Chromium
 # Supports: linux/amd64, linux/arm64
 
-# rbw to /usr/local/bin - amd64 + arm64 (correct tags)
+# rbw builder - Bitwarden CLI
 FROM rust:1.81-slim-bookworm AS rbw-builder
 WORKDIR /build
 # PIN STABLE VERSION - no edition2024
@@ -11,7 +11,7 @@ RUN cargo install rbw --version 1.13.2 --locked && \
     strip /output/bin/rbw
 
 # gogcli builder - Google Suite CLI
-FROM golang:1.22-slim-bookworm AS gog-builder
+FROM golang:1.26-bookworm AS gog-builder
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 RUN git clone https://github.com/steipete/gogcli.git /build/gogcli && \
     cd /build/gogcli && \
