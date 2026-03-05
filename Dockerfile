@@ -1,6 +1,15 @@
 # OpenClaw with Playwright Chromium
 # Supports: linux/amd64, linux/arm64
 
+# rbw to /usr/local/bin - amd64 + arm64 (correct tags)
+FROM rust:1.81-slim-bookworm AS rbw-builder
+WORKDIR /build
+# PIN STABLE VERSION - no edition2024
+RUN cargo install rbw --version 1.13.2 --locked && \
+    mkdir -p /output/bin && \
+    cp $(which rbw) /output/bin/rbw && \
+    strip /output/bin/rbw
+
 FROM ghcr.io/openclaw/openclaw:latest
 
 # Enables CI mode: skips TTY prompts
@@ -8,6 +17,14 @@ ENV CI=true
 
 # Install Playwright system dependencies and Chromium
 USER root
+
+COPY --from=rbw-builder /output/bin/rbw /usr/local/bin/rbw
+RUN chmod +x /usr/local/bin/rbw && \
+    apt-get update --allow-releaseinfo-change -y && \
+    apt-get install -y --no-install-recommends pinentry-tty && \
+    rm -rf /var/lib/apt/lists/* && \
+    rbw --version
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Playwright/Chromium dependencies
     libasound2 \
