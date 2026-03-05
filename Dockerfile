@@ -75,6 +75,15 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     command -v bw && \
     bw --version
 
+# Install Obsidian CLI-compatible tool for headless container usage (arm64 + amd64)
+# Note: official Obsidian desktop CLI requires GUI app registration and is not suitable in this container.
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm view obsidian-headless version && \
+    npm install --global obsidian-headless --registry=https://registry.npmjs.org/ && \
+    ln -sf "$(command -v ob)" /usr/local/bin/obsidian-cli && \
+    command -v ob && \
+    command -v obsidian-cli
+
 # Switch back to node user
 USER node
 
