@@ -11,7 +11,7 @@ WORKDIR /build/clients/apps/cli
 RUN rm -rf .husky && \
     npm install --ignore-scripts && \
     npm install -g cross-env webpack pkg webpack-cli && \
-    cross-env NODE_ENV=production webpack --yes && \
+    echo y | cross-env NODE_ENV=production webpack && \
     mkdir -p /output/bin && \
     pkg ./build/bw.js --targets linux-x64,linux-arm64 --output /output/bin/bw && \
     chmod +x /output/bin/bw
