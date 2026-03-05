@@ -11,6 +11,15 @@ RUN git clone https://github.com/steipete/gogcli.git /build/gogcli && \
     cp /build/gogcli/bin/gog /output/bin/gog && \
     strip /output/bin/gog
 
+# notesmd-cli builder
+FROM golang:1.26-bookworm AS notesmd-builder
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+RUN git clone https://github.com/Yakitrak/notesmd-cli.git /build/notesmd-cli && \
+    cd /build/notesmd-cli && \
+    mkdir -p /output/bin && \
+    go build -o /output/bin/notesmd-cli . && \
+    strip /output/bin/notesmd-cli
+
 FROM ghcr.io/openclaw/openclaw:latest
 
 # Install Playwright system dependencies and Chromium
@@ -18,6 +27,9 @@ USER root
 
 COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
 RUN chmod +x /usr/local/bin/gog && gog --version
+
+COPY --from=notesmd-builder /output/bin/notesmd-cli /usr/local/bin/notesmd-cli
+RUN chmod +x /usr/local/bin/notesmd-cli && notesmd-cli --help >/dev/null
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Playwright/Chromium dependencies
@@ -74,15 +86,6 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     npm install --global @bitwarden/cli --registry=https://registry.npmjs.org/ && \
     command -v bw && \
     bw --version
-
-# Install Obsidian CLI-compatible tool for headless container usage (arm64 + amd64)
-# Note: official Obsidian desktop CLI requires GUI app registration and is not suitable in this container.
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm view obsidian-headless version && \
-    npm install --global obsidian-headless --registry=https://registry.npmjs.org/ && \
-    ln -sf "$(command -v ob)" /usr/local/bin/obsidian-cli && \
-    command -v ob && \
-    command -v obsidian-cli
 
 # Switch back to node user
 USER node
