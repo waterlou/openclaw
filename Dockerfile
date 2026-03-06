@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr2 \
     xdg-utils \
     fonts-liberation \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Playwright browsers path

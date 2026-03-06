@@ -15,6 +15,34 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - **[gh](https://cli.github.com/)** - GitHub CLI for interacting with GitHub from the command line
 - **[gws](https://github.com/googleworkspace/cli)** - Google Workspace CLI
 - **[notesmd-cli](https://github.com/Yakitrak/notesmd-cli)** - Interact with Obsidian vaults from the terminal
+- **poppler-utils** - PDF command-line tools (for example `pdftotext`, `pdfinfo`)
+
+## `gws` Headless Auth
+
+Reference: [googleworkspace/cli README - Service Account (server-to-server)](https://github.com/googleworkspace/cli?tab=readme-ov-file#service-account-server-to-server)
+
+### Service account (server-to-server)
+
+No browser login is required. Mount your service account key and point `gws` to it:
+
+```bash
+docker run --rm -it \
+  -v /path/to/service-account.json:/run/secrets/gws-sa.json:ro \
+  -e GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE=/run/secrets/gws-sa.json \
+  openclaw gws drive files list
+```
+
+### Optional: pre-obtained access token
+
+If your environment already mints OAuth tokens (for example with `gcloud`), you can use:
+
+```bash
+docker run --rm -it \
+  -e GOOGLE_WORKSPACE_CLI_TOKEN="$(gcloud auth print-access-token)" \
+  openclaw gws drive files list
+```
+
+`gws` auth precedence (highest first): `GOOGLE_WORKSPACE_CLI_TOKEN`, then `GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE`.
 
 ## Quick Start
 
