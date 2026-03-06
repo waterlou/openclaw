@@ -17,6 +17,11 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - **[notesmd-cli](https://github.com/Yakitrak/notesmd-cli)** - Interact with Obsidian vaults from the terminal
 - **poppler-utils** - PDF command-line tools (for example `pdftotext`, `pdfinfo`)
 
+## Python Packages
+
+- `python3` and `pip` are installed in the image
+- `ib_insync` is preinstalled for Interactive Brokers API workflows
+
 ## `gws` Headless Auth
 
 Reference: [googleworkspace/cli README - Service Account (server-to-server)](https://github.com/googleworkspace/cli?tab=readme-ov-file#service-account-server-to-server)

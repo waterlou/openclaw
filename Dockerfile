@@ -82,6 +82,15 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     command -v gws && \
     gws --version
 
+# Install Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --no-cache-dir --break-system-packages ib_insync && \
+    python3 -c "import ib_insync; print(ib_insync.__version__)"
+
 # Switch back to node user
 USER node
 
