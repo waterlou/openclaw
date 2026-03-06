@@ -39,6 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     fonts-liberation \
     poppler-utils \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Playwright browsers path

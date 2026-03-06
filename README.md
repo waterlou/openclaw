@@ -16,6 +16,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - **[gws](https://github.com/googleworkspace/cli)** - Google Workspace CLI
 - **[notesmd-cli](https://github.com/Yakitrak/notesmd-cli)** - Interact with Obsidian vaults from the terminal
 - **poppler-utils** - PDF command-line tools (for example `pdftotext`, `pdfinfo`)
+- **postgresql-client** - PostgreSQL client tools (for example `psql`)
 
 ## Python Packages
 
