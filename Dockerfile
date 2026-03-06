@@ -1,16 +1,6 @@
 # OpenClaw with Playwright Chromium
 # Supports: linux/amd64, linux/arm64
 
-# gogcli builder - Google Suite CLI
-FROM golang:1.26-bookworm AS gog-builder
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
-RUN git clone https://github.com/steipete/gogcli.git /build/gogcli && \
-    cd /build/gogcli && \
-    make && \
-    mkdir -p /output/bin && \
-    cp /build/gogcli/bin/gog /output/bin/gog && \
-    strip /output/bin/gog
-
 # notesmd-cli builder
 FROM golang:1.26-bookworm AS notesmd-builder
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
@@ -24,9 +14,6 @@ FROM ghcr.io/openclaw/openclaw:latest
 
 # Install Playwright system dependencies and Chromium
 USER root
-
-COPY --from=gog-builder /output/bin/gog /usr/local/bin/gog
-RUN chmod +x /usr/local/bin/gog && gog --version
 
 COPY --from=notesmd-builder /output/bin/notesmd-cli /usr/local/bin/notesmd-cli
 RUN chmod +x /usr/local/bin/notesmd-cli && notesmd-cli --help >/dev/null
@@ -86,6 +73,13 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     npm install --global @bitwarden/cli --registry=https://registry.npmjs.org/ && \
     command -v bw && \
     bw --version
+
+# Install Google Workspace CLI (gws) to /usr/local/bin for amd64 + arm64
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm view @googleworkspace/cli version && \
+    npm install --global @googleworkspace/cli --registry=https://registry.npmjs.org/ && \
+    command -v gws && \
+    gws --version
 
 # Switch back to node user
 USER node
