@@ -11,6 +11,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 ## Extra Tools
 
 - **[bw](https://github.com/bitwarden/cli)** - Official Bitwarden CLI for secure password management
+- **[codex](https://openai.com/index/codex-now-generally-available/)** - OpenAI Codex CLI for coding tasks from the terminal
 - **[himalaya](https://github.com/pimalaya/himalaya)** - CLI email client for managing emails
 - **[gh](https://cli.github.com/)** - GitHub CLI for interacting with GitHub from the command line
 - **[gws](https://github.com/googleworkspace/cli)** - Google Workspace CLI
@@ -57,8 +58,9 @@ docker run --rm -it \
 git clone https://github.com/waterlou/openclaw.git
 cd openclaw
 
-# Create .env file with your API key
+# Create .env file with your API key(s)
 echo "ANTHROPIC_API_KEY=your-key-here" > .env
+echo "OPENAI_API_KEY=your-key-here" >> .env
 
 # Build and start
 docker compose up -d
@@ -85,6 +87,26 @@ docker compose logs -f
 ```bash
 docker build -t openclaw .
 ```
+
+## Codex CLI
+
+`codex` is installed globally in the image at `/usr/local/bin/codex`.
+
+To use it inside the running container:
+
+```bash
+docker compose exec openclaw codex --help
+```
+
+For interactive use in the OpenClaw workspace:
+
+```bash
+docker compose exec -it openclaw sh
+cd /home/node/workspace
+codex
+```
+
+`OPENAI_API_KEY` must be set for Codex CLI commands.
 
 ## License
 

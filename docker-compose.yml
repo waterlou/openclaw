@@ -15,6 +15,7 @@ services:
     environment:
       # AI Provider (set your API key)
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 
       # Gateway configuration
       OPENCLAW_GATEWAY_BIND: lan

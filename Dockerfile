@@ -83,6 +83,13 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     command -v gws && \
     gws --version
 
+# Install OpenAI Codex CLI to /usr/local/bin for amd64 + arm64
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm view @openai/codex version && \
+    npm install --global @openai/codex --registry=https://registry.npmjs.org/ && \
+    command -v codex && \
+    codex --version
+
 # Install Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
