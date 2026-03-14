@@ -19,6 +19,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - **[notesmd-cli](https://github.com/Yakitrak/notesmd-cli)** - Interact with Obsidian vaults from the terminal
 - **poppler-utils** - PDF command-line tools (for example `pdftotext`, `pdfinfo`)
 - **postgresql-client** - PostgreSQL client tools (for example `psql`)
+- **tmux** - Terminal multiplexer
 
 ## Python Packages
 
@@ -34,6 +35,8 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - `gh` 2.88.1
 - `himalaya` 1.2.0
 - `ib_insync` 0.9.86
+
+Note: installing `instagram-cli` currently emits deprecation warnings for some dependencies during build. This is expected from upstream and does not block the install.
 
 ## `gws` Headless Auth
 

@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-liberation \
     poppler-utils \
     postgresql-client \
+    tmux \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Playwright browsers path
