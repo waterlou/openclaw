@@ -24,6 +24,15 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - `python3` and `pip` are installed in the image
 - `ib_insync` is preinstalled for Interactive Brokers API workflows
 
+## Package Versions (Build 2026-03-14)
+
+- `bw` 2026.2.0
+- `codex` 0.114.0
+- `gws` 0.16.0
+- `gh` 2.88.1
+- `himalaya` 1.2.0
+- `ib_insync` 0.9.86
+
 ## `gws` Headless Auth
 
 Reference: [googleworkspace/cli README - Service Account (server-to-server)](https://github.com/googleworkspace/cli?tab=readme-ov-file#service-account-server-to-server)
