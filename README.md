@@ -12,6 +12,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 
 - **[bw](https://github.com/bitwarden/cli)** - Official Bitwarden CLI for secure password management
 - **[codex](https://openai.com/index/codex-now-generally-available/)** - OpenAI Codex CLI for coding tasks from the terminal
+- **[instagram-cli](https://github.com/supreme-gg-gg/instagram-cli)** - Instagram CLI (TypeScript client)
 - **[himalaya](https://github.com/pimalaya/himalaya)** - CLI email client for managing emails
 - **[gh](https://cli.github.com/)** - GitHub CLI for interacting with GitHub from the command line
 - **[gws](https://github.com/googleworkspace/cli)** - Google Workspace CLI
@@ -28,6 +29,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 
 - `bw` 2026.2.0
 - `codex` 0.114.0
+- `instagram-cli` 1.4.5
 - `gws` 0.16.0
 - `gh` 2.88.1
 - `himalaya` 1.2.0

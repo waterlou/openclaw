@@ -83,6 +83,13 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     command -v gws && \
     gws --version
 
+# Install Instagram CLI (TypeScript client) to /usr/local/bin for amd64 + arm64
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm view @i7m/instagram-cli version && \
+    npm install --global @i7m/instagram-cli --registry=https://registry.npmjs.org/ && \
+    command -v instagram-cli && \
+    instagram-cli --help
+
 # Install OpenAI Codex CLI to /usr/local/bin for amd64 + arm64
 RUN npm config set registry https://registry.npmjs.org/ && \
     npm view @openai/codex version && \
