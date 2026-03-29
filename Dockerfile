@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgtk-3-0 \
     libnspr4 \
     libnss3 \
+    libx11-xcb1 \
     libxcomposite1 \
     libxdamage1 \
     libxfixes3 \
@@ -45,6 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Set Playwright browsers path
 ENV PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
+ENV LD_LIBRARY_PATH=/home/node/.cache/camoufox
 
 WORKDIR /app
 
@@ -104,11 +106,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --no-cache-dir --break-system-packages ib_insync && \
-    python3 -c "import ib_insync; print(ib_insync.__version__)"
+RUN python3 -m pip install --no-cache-dir --break-system-packages \
+    ib_insync \
+    camoufox && \
+    python3 -c "import ib_insync; print(ib_insync.__version__)" && \
+    command -v camoufox && \
+    camoufox --help >/dev/null
 
 # Switch back to node user
 USER node
+
+RUN python3 -m camoufox fetch && \
+    python3 -m camoufox path && \
+    python3 -m camoufox version
 
 # Expose OpenClaw gateway port
 EXPOSE 18789

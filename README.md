@@ -11,6 +11,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 ## Extra Tools
 
 - **[bw](https://github.com/bitwarden/cli)** - Official Bitwarden CLI for secure password management
+- **[camoufox](https://github.com/daijro/camoufox)** - Stealth-focused Firefox-based browser with Python wrapper and CLI
 - **[codex](https://openai.com/index/codex-now-generally-available/)** - OpenAI Codex CLI for coding tasks from the terminal
 - **[instagram-cli](https://github.com/supreme-gg-gg/instagram-cli)** - Instagram CLI (TypeScript client)
 - **[himalaya](https://github.com/pimalaya/himalaya)** - CLI email client for managing emails
@@ -25,14 +26,17 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 
 - `python3` and `pip` are installed in the image
 - `ib_insync` is preinstalled for Interactive Brokers API workflows
+- `camoufox` is preinstalled, and its browser binaries are fetched during image build
 
-## Package Versions (Build 2026-03-14)
+## Package Versions (Build 2026-03-29)
 
 - `bw` 2026.2.0
-- `codex` 0.114.0
+- `camoufox` Python package 0.4.11
+- `camoufox` browser 135.0.1-beta.24
+- `codex` 0.117.0
 - `instagram-cli` 1.4.5
-- `gws` 0.16.0
-- `gh` 2.88.1
+- `gws` 0.22.3
+- `gh` 2.89.0
 - `himalaya` 1.2.0
 - `ib_insync` 0.9.86
 
@@ -121,6 +125,30 @@ codex
 ```
 
 `OPENAI_API_KEY` must be set for Codex CLI commands.
+
+## Camoufox
+
+`camoufox` is installed globally in the image, and the browser files are pre-fetched into `/home/node/.cache/camoufox`.
+
+To verify the install inside the running container:
+
+```bash
+docker compose exec openclaw python3 -m camoufox version
+docker compose exec openclaw /home/node/.cache/camoufox/camoufox-bin --version
+```
+
+Example Python usage:
+
+```bash
+docker compose exec openclaw python3 - <<'PY'
+from camoufox.sync_api import Camoufox
+
+with Camoufox(headless=True) as browser:
+    page = browser.new_page()
+    page.goto("https://example.com")
+    print(browser.version)
+PY
+```
 
 ## License
 
