@@ -7,6 +7,7 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - OpenClaw gateway
 - Playwright Chromium browser
 - Multi-architecture support (linux/amd64, linux/arm64)
+- Preinstalled `lossless-claw` context engine plugin
 
 ## Extra Tools
 
@@ -28,13 +29,18 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - `ib_insync` is preinstalled for Interactive Brokers API workflows
 - `camoufox` is preinstalled, and its browser binaries are fetched during image build
 
-## Package Versions (Build 2026-03-29)
+## Included Plugins
+
+- **[lossless-claw](https://github.com/Martian-Engineering/lossless-claw)** - Lossless Context Management plugin for OpenClaw, bundled into the image
+
+## Package Versions (Build 2026-03-31)
 
 - `bw` 2026.2.0
 - `camoufox` Python package 0.4.11
 - `camoufox` browser 135.0.1-beta.24
 - `codex` 0.117.0
 - `instagram-cli` 1.4.5
+- `lossless-claw` 0.5.2
 - `gws` 0.22.3
 - `gh` 2.89.0
 - `himalaya` 1.2.0
@@ -149,6 +155,21 @@ with Camoufox(headless=True) as browser:
     print(browser.version)
 PY
 ```
+
+## Lossless Claw
+
+`lossless-claw` is bundled into `/app/extensions/lossless-claw`, which is OpenClaw's stock plugin directory. This keeps the plugin available even when Docker Compose mounts `/home/node/.openclaw` as a volume.
+
+On container start, the entrypoint seeds `/home/node/.openclaw/openclaw.json` with `lossless-claw` enabled if that plugin entry is missing. Existing plugin settings in the mounted volume are left unchanged.
+
+To verify it inside the running container:
+
+```bash
+docker compose exec openclaw test -d /app/extensions/lossless-claw && echo installed
+docker compose exec openclaw sh -lc "openclaw plugins list | grep lossless"
+```
+
+The plugin stores its SQLite database at `/home/node/.openclaw/lcm.db` by default, so its data still lives in the mounted OpenClaw state volume. It uses OpenClaw's configured model/provider unless you set `lossless-claw` plugin config or `LCM_*` environment overrides.
 
 ## License
 

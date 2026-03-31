@@ -12,11 +12,15 @@ RUN git clone https://github.com/Yakitrak/notesmd-cli.git /build/notesmd-cli && 
 
 FROM ghcr.io/openclaw/openclaw:latest
 
+ARG LOSSLESS_CLAW_VERSION=0.5.2
+
 # Install Playwright system dependencies and Chromium
 USER root
 
 COPY --from=notesmd-builder /output/bin/notesmd-cli /usr/local/bin/notesmd-cli
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/notesmd-cli && notesmd-cli --help >/dev/null
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Playwright/Chromium dependencies
@@ -113,6 +117,22 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
     command -v camoufox && \
     camoufox --help >/dev/null
 
+RUN mkdir -p /home/node/.openclaw && \
+    chown -R node:node /home/node/.openclaw
+
+# Bundle lossless-claw into OpenClaw's stock extensions directory so it survives
+# the /home/node/.openclaw volume mount from docker compose.
+RUN tmpdir="$(mktemp -d)" && \
+    cd "$tmpdir" && \
+    tarball="$(npm pack @martian-engineering/lossless-claw@${LOSSLESS_CLAW_VERSION} | tail -n 1)" && \
+    rm -rf /app/extensions/lossless-claw && \
+    mkdir -p /app/extensions/lossless-claw && \
+    tar -xzf "$tarball" -C /app/extensions/lossless-claw --strip-components=1 && \
+    rm -rf "$tmpdir" && \
+    chown -R node:node /app/extensions/lossless-claw && \
+    test -f /app/extensions/lossless-claw/openclaw.plugin.json && \
+    test -f /app/extensions/lossless-claw/index.ts
+
 # Switch back to node user
 USER node
 
@@ -122,6 +142,8 @@ RUN python3 -m camoufox fetch && \
 
 # Expose OpenClaw gateway port
 EXPOSE 18789
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Start OpenClaw gateway
 CMD ["node", "dist/index.js", "gateway"]
