@@ -41,12 +41,14 @@ A Docker image for OpenClaw with pre-installed Playwright Chromium browser and a
 - `codex` 0.117.0
 - `instagram-cli` 1.4.5
 - `lossless-claw` 0.5.2
-- `gws` 0.22.3
+- `gws` 0.22.5
 - `gh` 2.89.0
 - `himalaya` 1.2.0
 - `ib_insync` 0.9.86
 
 Note: installing `instagram-cli` currently emits deprecation warnings for some dependencies during build. This is expected from upstream and does not block the install.
+
+`gws` is installed from the upstream musl release artifact so it remains compatible with the Debian 12 / glibc 2.36 runtime used by this image.
 
 ## `gws` Headless Auth
 

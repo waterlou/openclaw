@@ -12,7 +12,9 @@ RUN git clone https://github.com/Yakitrak/notesmd-cli.git /build/notesmd-cli && 
 
 FROM ghcr.io/openclaw/openclaw:latest
 
+ARG TARGETARCH
 ARG LOSSLESS_CLAW_VERSION=0.5.2
+ARG GWS_VERSION=0.22.5
 
 # Install Playwright system dependencies and Chromium
 USER root
@@ -83,11 +85,27 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     command -v bw && \
     bw --version
 
-# Install Google Workspace CLI (gws) to /usr/local/bin for amd64 + arm64
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm view @googleworkspace/cli version && \
-    npm install --global @googleworkspace/cli --registry=https://registry.npmjs.org/ && \
-    command -v gws && \
+# Install Google Workspace CLI (gws) to /usr/local/bin for amd64 + arm64.
+# Use the upstream musl release artifact so the binary does not depend on a
+# newer glibc than the Debian 12-based runtime image provides.
+RUN set -eux; \
+    npm config set registry https://registry.npmjs.org/; \
+    npm install --global --ignore-scripts "@googleworkspace/cli@${GWS_VERSION}" --registry=https://registry.npmjs.org/; \
+    case "${TARGETARCH:-$(dpkg --print-architecture)}" in \
+        amd64|x86_64) gws_target='x86_64-unknown-linux-musl' ;; \
+        arm64|aarch64) gws_target='aarch64-unknown-linux-musl' ;; \
+        *) echo "Unsupported arch for gws: ${TARGETARCH:-$(dpkg --print-architecture)}" >&2; exit 1 ;; \
+    esac; \
+    gws_url="https://github.com/googleworkspace/cli/releases/download/v${GWS_VERSION}/google-workspace-cli-${gws_target}.tar.gz"; \
+    rm -rf /usr/local/lib/node_modules/@googleworkspace/cli/bin; \
+    mkdir -p /usr/local/lib/node_modules/@googleworkspace/cli/bin; \
+    curl -fsSL "${gws_url}" -o /tmp/gws.tgz; \
+    curl -fsSL "${gws_url}.sha256" -o /tmp/gws.tgz.sha256; \
+    printf '%s  %s\n' "$(cut -d' ' -f1 /tmp/gws.tgz.sha256)" /tmp/gws.tgz | sha256sum -c -; \
+    tar -xzf /tmp/gws.tgz -C /usr/local/lib/node_modules/@googleworkspace/cli/bin; \
+    chmod +x /usr/local/lib/node_modules/@googleworkspace/cli/bin/gws; \
+    rm -f /tmp/gws.tgz /tmp/gws.tgz.sha256; \
+    command -v gws; \
     gws --version
 
 # Install Instagram CLI (TypeScript client) to /usr/local/bin for amd64 + arm64
