@@ -6,8 +6,8 @@ CONFIG_FILE="${CONFIG_DIR}/openclaw.json"
 
 mkdir -p "${CONFIG_DIR}"
 
-# Seed the bundled lossless-claw plugin into the user's config on first boot
-# without overwriting any explicit plugin settings they already have.
+# Seed bundled stock plugins into the user's config on first boot without
+# overwriting any explicit plugin settings they already have.
 node - "${CONFIG_FILE}" <<'NODE'
 const fs = require("fs");
 
@@ -19,11 +19,28 @@ if (fs.existsSync(configPath)) {
   config = JSON.parse(raw);
 }
 
+let changed = false;
+
+const gateway = config.gateway ?? (config.gateway = {});
+if (gateway.mode == null) {
+  gateway.mode = "local";
+  changed = true;
+}
+
 const plugins = config.plugins ?? (config.plugins = {});
 const entries = plugins.entries ?? (plugins.entries = {});
 
 if (!Object.prototype.hasOwnProperty.call(entries, "lossless-claw")) {
   entries["lossless-claw"] = { enabled: true, config: {} };
+  changed = true;
+}
+
+if (!Object.prototype.hasOwnProperty.call(entries, "camofox-browser")) {
+  entries["camofox-browser"] = { enabled: true, config: {} };
+  changed = true;
+}
+
+if (changed) {
   fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
 }
 NODE
