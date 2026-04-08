@@ -134,6 +134,16 @@ codex
 
 `OPENAI_API_KEY` must be set for Codex CLI commands.
 
+## QMD
+
+`qmd` is installed globally in the image.
+
+To verify the install inside the running container:
+
+```bash
+docker compose exec openclaw qmd --help
+```
+
 ## Camoufox
 
 `camoufox` is installed globally in the image, and the browser files are pre-fetched into `/home/node/.cache/camoufox`.

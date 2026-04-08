@@ -15,6 +15,7 @@ FROM ghcr.io/openclaw/openclaw:latest
 ARG TARGETARCH
 ARG LOSSLESS_CLAW_VERSION=0.5.2
 ARG GWS_VERSION=0.22.5
+ARG QMD_VERSION=2.1.0
 
 # Install Playwright system dependencies and Chromium
 USER root
@@ -121,6 +122,13 @@ RUN npm config set registry https://registry.npmjs.org/ && \
     npm install --global @openai/codex --registry=https://registry.npmjs.org/ && \
     command -v codex && \
     codex --version
+
+# Install QMD to /usr/local/bin for amd64 + arm64
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm view @tobilu/qmd version && \
+    npm install --global "@tobilu/qmd@${QMD_VERSION}" --registry=https://registry.npmjs.org/ && \
+    command -v qmd && \
+    qmd --help >/dev/null
 
 # Install Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
