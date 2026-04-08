@@ -173,22 +173,6 @@ docker compose exec openclaw sh -lc "openclaw plugins list | grep lossless"
 
 The plugin stores its SQLite database at `/home/node/.openclaw/lcm.db` by default, so its data still lives in the mounted OpenClaw state volume. It uses OpenClaw's configured model/provider unless you set `lossless-claw` plugin config or `LCM_*` environment overrides.
 
-## Camofox Browser
-
-`camofox-browser` is bundled into `/app/extensions/camofox-browser`, which is also part of OpenClaw's stock plugin directory. Its production `node_modules` are installed during the image build, so the plugin can start directly from the baked image even when `/home/node/.openclaw` is mounted as a volume.
-
-On container start, the entrypoint seeds `/home/node/.openclaw/openclaw.json` with `camofox-browser` enabled if that plugin entry is missing. Existing plugin settings in the mounted volume are left unchanged.
-
-To verify it inside the running container:
-
-```bash
-docker compose exec openclaw test -d /app/extensions/camofox-browser && echo installed
-docker compose exec openclaw test -d /app/extensions/camofox-browser/node_modules/camoufox-js && echo deps-installed
-docker compose exec openclaw sh -lc "curl -fsS http://127.0.0.1:9377/health"
-```
-
-The plugin defaults to `autoStart: true` and `port: 9377`, so once OpenClaw loads it the bundled browser server should start automatically unless you override that in the `camofox-browser` plugin config inside `/home/node/.openclaw/openclaw.json`.
-
 ## License
 
 Same as OpenClaw.

@@ -14,7 +14,6 @@ FROM ghcr.io/openclaw/openclaw:latest
 
 ARG TARGETARCH
 ARG LOSSLESS_CLAW_VERSION=0.5.2
-ARG CAMOFOX_BROWSER_VERSION=1.5.2
 ARG GWS_VERSION=0.22.5
 
 # Install Playwright system dependencies and Chromium
@@ -152,29 +151,8 @@ RUN tmpdir="$(mktemp -d)" && \
     test -f /app/extensions/lossless-claw/openclaw.plugin.json && \
     test -f /app/extensions/lossless-claw/index.ts
 
-# Bundle camofox-browser into OpenClaw's stock extensions directory so it also
-# survives the /home/node/.openclaw volume mount from docker compose.
-RUN tmpdir="$(mktemp -d)" && \
-    cd "$tmpdir" && \
-    tarball="$(npm pack @askjo/camofox-browser@${CAMOFOX_BROWSER_VERSION} | tail -n 1)" && \
-    rm -rf /app/extensions/camofox-browser && \
-    mkdir -p /app/extensions/camofox-browser && \
-    tar -xzf "$tarball" -C /app/extensions/camofox-browser --strip-components=1 && \
-    rm -rf "$tmpdir" && \
-    chown -R node:node /app/extensions/camofox-browser && \
-    test -f /app/extensions/camofox-browser/openclaw.plugin.json && \
-    test -f /app/extensions/camofox-browser/plugin.ts && \
-    test -f /app/extensions/camofox-browser/server.js
-
 # Switch back to node user
 USER node
-
-RUN cd /app/extensions/camofox-browser && \
-    npm config set registry https://registry.npmjs.org/ && \
-    npm install --omit=dev --no-fund --no-audit && \
-    test -d node_modules && \
-    test -d node_modules/camoufox-js && \
-    test -d node_modules/playwright-core
 
 RUN python3 -m camoufox fetch && \
     python3 -m camoufox path && \
