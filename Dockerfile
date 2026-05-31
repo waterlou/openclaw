@@ -61,7 +61,7 @@ USER node
 
 # Download Chromium for Playwright using existing dependencies from base image
 RUN mkdir -p /home/node/.cache/ms-playwright && \
-    pnpm exec playwright-core install chromium
+    node /app/node_modules/playwright-core/cli.js install chromium
 
 USER root
 
